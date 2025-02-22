@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Kviz - Pogodi Životinju</title>
+  <title>Igra Pogađanja - Više Kategorija</title>
+  <!-- Mobilni dizajn -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    body {
-      margin: 0;
+    /* Generalni reset i mobil-friendly postavke */
+    * {
+      box-sizing: border-box;
+      margin: 0; 
       padding: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+    }
+
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #f6d365, #fda085);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -18,244 +26,306 @@
     }
 
     h1 {
-      margin-top: 20px;
+      margin: 20px 0;
       text-align: center;
     }
 
+    #category-container, 
     #game-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       background: #fff;
+      max-width: 500px;
+      width: 90%;
+      margin: 10px auto;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-      width: 90%;
-      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    #canvas-container {
-      position: relative;
-      width: 400px;
-      height: 300px;
-      margin-bottom: 20px;
+    /* Kategorije - početni ekran */
+    .category-btn {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 18px;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .category-btn:hover {
+      opacity: 0.85;
+    }
+
+    /* Sam kviz */
+    #game-info {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    #image-container {
+      width: 100%;
+      max-width: 400px;
+      height: 250px;
+      margin: 0 auto 20px auto;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f0f0f0;
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #f0f0f0;
-      border-radius: 10px;
-      overflow: hidden;
     }
-
-    #animal-image {
+    #current-image {
       max-width: 100%;
       max-height: 100%;
-      border-radius: 10px;
+    }
+
+    #scores {
+      font-size: 16px;
+      margin-bottom: 20px;
+      text-align: center;
     }
 
     .score-buttons {
       display: flex;
-      gap: 20px;
+      justify-content: space-around;
       margin-bottom: 20px;
     }
 
-    .score-buttons button {
-      padding: 10px 20px;
+    .score-btn {
+      flex: 1;
+      margin: 0 10px;
+      padding: 15px 0;
       font-size: 16px;
       border: none;
       border-radius: 5px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .score-buttons button:hover {
-      opacity: 0.8;
-    }
-
-    .next-button {
-      padding: 10px 30px;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      transition: 0.3s;
-      background-color: #00d775;
       color: #fff;
-      margin-bottom: 20px;
+      cursor: pointer;
+      transition: 0.3s;
     }
-
-    .next-button:hover {
-      background-color: #00b566;
+    .score-btn:hover {
+      opacity: 0.85;
     }
-
-    #scores {
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
+    .score-btn.sofia { background-color: #f39c12; }
+    .score-btn.matija { background-color: #3498db; }
 
     #winner {
-      font-size: 20px;
+      font-size: 18px;
+      text-align: center;
       font-weight: bold;
-      margin-top: 10px;
-      color: #e62e2e;
+      color: #d35400;
     }
   </style>
 </head>
 <body>
-  <h1>Pogodi Životinju</h1>
-  <div id="game-container">
-    <div id="canvas-container">
-      <!-- Ovdje se prikazuje slika životinje -->
-      <img id="animal-image" src="" alt="Trenutna životinja">
-    </div>
 
-    <div id="scores">
-      Sofia: <span id="sofia-score">0</span> | 
-      Matija: <span id="matija-score">0</span> | 
-      Krug: <span id="round-number">0</span>/20
-    </div>
+<h1>Igra Pogađanja</h1>
 
-    <div class="score-buttons">
-      <button id="sofia-btn" style="background-color: #f39c12; color: #fff;">+1 Sofia</button>
-      <button id="matija-btn" style="background-color: #3498db; color: #fff;">+1 Matija</button>
-    </div>
+<!-- Ekran za izbor kategorije -->
+<div id="category-container">
+  <p>Odaberite kategoriju za igru:</p>
+  <button class="category-btn" data-category="zivotinje">Životinje</button>
+  <button class="category-btn" data-category="predmeti">Predmeti</button>
+  <button class="category-btn" data-category="transport">Transport</button>
+</div>
 
-    <button id="next-btn" class="next-button">Sledeća slika</button>
-    <div id="winner"></div>
+<!-- Glavni kontejner igre (skriven dok ne odaberemo kategoriju) -->
+<div id="game-container" style="display:none;">
+  <div id="game-info">
+    <div>Runda: <span id="round-number">0</span>/<span id="total-rounds">10</span></div>
   </div>
 
-  <script>
-    // 50 slika (Wikimedia Commons)
-    const allAnimalImages = [
-      "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg",  // Elephant
-      "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg", // Lion
-      "https://upload.wikimedia.org/wikipedia/commons/5/56/Tiger.50.jpg",                // Tiger
-      "https://upload.wikimedia.org/wikipedia/commons/9/9f/Giraffe_standing.jpg",        // Giraffe
-      "https://upload.wikimedia.org/wikipedia/commons/f/f8/Plains_Zebra_Equus_quagga.jpg", // Zebra
-      "https://upload.wikimedia.org/wikipedia/commons/0/0c/Kangaroo_Australia_01.jpg",   // Kangaroo
-      "https://upload.wikimedia.org/wikipedia/commons/4/49/Koala_climbing_tree.jpg",     // Koala
-      "https://upload.wikimedia.org/wikipedia/commons/7/79/2010-kodiak-bear-1.jpg",      // Bear
-      "https://upload.wikimedia.org/wikipedia/commons/2/2c/Canis_lupus_occidentalis.jpg",// Wolf
-      "https://upload.wikimedia.org/wikipedia/commons/1/16/Vulpes_vulpes_laying_in_snow.jpg", // Fox
-      "https://upload.wikimedia.org/wikipedia/commons/4/44/Horse_%28kobenhavn%29.jpg",   // Horse
-      "https://upload.wikimedia.org/wikipedia/commons/6/6f/Vervet_monkey_KNP.jpg",       // Monkey
-      "https://upload.wikimedia.org/wikipedia/commons/a/a1/Male_gorilla_in_SF_zoo.jpg",  // Gorilla
-      "https://upload.wikimedia.org/wikipedia/commons/0/0f/Grosser_Panda.JPG",           // Panda
-      "https://upload.wikimedia.org/wikipedia/commons/6/6e/Leopard_africa.jpg",          // Leopard
-      "https://upload.wikimedia.org/wikipedia/commons/d/d0/Cheetah_Kruger.jpg",          // Cheetah
-      "https://upload.wikimedia.org/wikipedia/commons/1/1f/White_rhinoceros06_-_melbourne_zoo.jpg", // Rhino
-      "https://upload.wikimedia.org/wikipedia/commons/5/53/Hippopotamus_in_South_Africa_open_mouth.jpg", // Hippo
-      "https://upload.wikimedia.org/wikipedia/commons/d/d9/White-tailed_deer.jpg",       // Deer
-      "https://upload.wikimedia.org/wikipedia/commons/c/cf/Alces_alces_in_Baxter_State_Park.jpg",    // Moose
-      "https://upload.wikimedia.org/wikipedia/commons/d/d3/American_bison_k5680-1.jpg",  // Buffalo
-      "https://upload.wikimedia.org/wikipedia/commons/7/74/Camel_profile.jpg",           // Camel
-      "https://upload.wikimedia.org/wikipedia/commons/f/f8/Sheep_lawn.jpg",              // Sheep
-      "https://upload.wikimedia.org/wikipedia/commons/c/c9/Billy_Goat.jpg",              // Goat
-      "https://upload.wikimedia.org/wikipedia/commons/3/32/Donkey_2016_cropped.jpg",     // Donkey
-      "https://upload.wikimedia.org/wikipedia/commons/6/6e/Golde33443.jpg",              // Dog
-      "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",                   // Cat
-      "https://upload.wikimedia.org/wikipedia/commons/b/b4/Hen_in_Australia.jpg",        // Chicken
-      "https://upload.wikimedia.org/wikipedia/commons/5/54/Mallard2.jpg",                // Duck
-      "https://upload.wikimedia.org/wikipedia/commons/d/db/Grey_Lag_Goose.jpg",          // Goose
-      "https://upload.wikimedia.org/wikipedia/commons/0/02/Pig_3.jpg",                   // Pig
-      "https://upload.wikimedia.org/wikipedia/commons/7/7e/Cow_female_black_white.jpg",  // Cow
-      "https://upload.wikimedia.org/wikipedia/commons/b/b1/Wild_rabbit_us.jpg",          // Rabbit
-      "https://upload.wikimedia.org/wikipedia/commons/1/16/Erinaceus_europaeus_LC0259.jpg", // Hedgehog
-      "https://upload.wikimedia.org/wikipedia/commons/0/08/Squirrel_posing.jpg",         // Squirrel
-      "https://upload.wikimedia.org/wikipedia/commons/4/49/Bottlenose_dolphin_KSC04pd0178.jpg", // Dolphin
-      "https://upload.wikimedia.org/wikipedia/commons/5/5f/Humpback_whale_underwater_shot.jpg",      // Whale
-      "https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg",             // Shark
-      "https://upload.wikimedia.org/wikipedia/commons/6/6f/African_penguins_Boulder_Bay_02.jpg",     // Penguin
-      "https://upload.wikimedia.org/wikipedia/commons/9/9e/Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg", // Flamingo
-      "https://upload.wikimedia.org/wikipedia/commons/e/e2/Bald_Eagle_Portrait.jpg",     // Eagle
-      "https://upload.wikimedia.org/wikipedia/commons/c/c3/Bubo_bubo_6_%28Martin_Mecnarowski%29.jpg", // Owl
-      "https://upload.wikimedia.org/wikipedia/commons/9/9a/Common_Python.jpg",           // Snake
-      "https://upload.wikimedia.org/wikipedia/commons/1/19/Red_eyed_tree_frog_edit2.jpg",// Frog
-      "https://upload.wikimedia.org/wikipedia/commons/3/3a/Gal%C3%A1pagos_Giant_Tortoise_Shell.jpg", // Tortoise
-      "https://upload.wikimedia.org/wikipedia/commons/2/25/NileCrocodile.jpg",           // Crocodile
-      "https://upload.wikimedia.org/wikipedia/commons/8/84/Chameleon_kenya.jpg",         // Chameleon
-      "https://upload.wikimedia.org/wikipedia/commons/e/e7/Artibeus_jamaicensis.jpg",    // Bat
-      "https://upload.wikimedia.org/wikipedia/commons/6/68/Male_Elephant_Seal.jpg",      // Elephant seal
-      "https://upload.wikimedia.org/wikipedia/commons/6/6b/California_Sea_Lion_at_Point_Lobos.jpg" // Sea Lion
-    ];
+  <div id="image-container">
+    <img id="current-image" src="" alt="slika">
+  </div>
 
-    const totalRounds = 20; // Koliko slika/krugova želimo
-    let currentRound = 0;
-    let sofiaScore = 0;
-    let matijaScore = 0;
+  <div id="scores">
+    Sofia: <span id="sofia-score">0</span> | 
+    Matija: <span id="matija-score">0</span>
+  </div>
 
-    // Umesto da koristimo sve 50 redom, možemo i da izmešamo niz ili izvučemo slučajnih 20
-    // Za demonstraciju ćemo samo prikazivati PRVIH 20 iz liste, ali možeš prilagoditi.
-    // Ili napravi random redosled:
-    // allAnimalImages.sort(() => 0.5 - Math.random());
+  <div class="score-buttons">
+    <button class="score-btn sofia" id="sofia-btn">+1 Sofia</button>
+    <button class="score-btn matija" id="matija-btn">+1 Matija</button>
+  </div>
 
-    // Npr. ovde ćemo uzeti prvih 20.
-    const gameImages = allAnimalImages.slice(0, 20);
+  <div id="winner"></div>
+</div>
 
-    const sofiaBtn = document.getElementById('sofia-btn');
-    const matijaBtn = document.getElementById('matija-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const animalImage = document.getElementById('animal-image');
-    const sofiaScoreSpan = document.getElementById('sofia-score');
-    const matijaScoreSpan = document.getElementById('matija-score');
-    const roundNumberSpan = document.getElementById('round-number');
-    const winnerDiv = document.getElementById('winner');
 
-    // Funkcija za učitavanje sledeće slike
-    function loadNextImage() {
-      if (currentRound < totalRounds) {
-        animalImage.src = gameImages[currentRound];
-        roundNumberSpan.textContent = currentRound + 1; 
-      } else {
-        // Kviz je gotov, utvrdimo pobednika
-        declareWinner();
-      }
+<script>
+  // --- 1) Definišemo slike po kategorijama ---
+  // Za DEMO stavljamo po 5 proverenih linkova. Možete ih proširiti (npr. na 50) kako želite.
+  const imagesByCategory = {
+    zivotinje: [
+      "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg", 
+      "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/5/56/Tiger.50.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/9/9f/Giraffe_standing.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/f/f8/Plains_Zebra_Equus_quagga.jpg",
+    ],
+    predmeti: [
+      "https://upload.wikimedia.org/wikipedia/commons/3/3f/Closed_book_Icon.png", // knjiga
+      "https://upload.wikimedia.org/wikipedia/commons/f/f5/Chair_icon.svg",       // stolica
+      "https://upload.wikimedia.org/wikipedia/commons/6/6e/Laptop_icon.svg",      // laptop
+      "https://upload.wikimedia.org/wikipedia/commons/8/8b/Smartphone_icon.svg",  // telefon
+      "https://upload.wikimedia.org/wikipedia/commons/5/57/Pencil_icon.svg",      // olovka
+    ],
+    transport: [
+      "https://upload.wikimedia.org/wikipedia/commons/d/db/2018_Mercedes-Benz_E220d_SE_Automatic_2.0_Front.jpg",  // automobil
+      "https://upload.wikimedia.org/wikipedia/commons/9/95/IC_Elsterwerda.JPG", // voz
+      "https://upload.wikimedia.org/wikipedia/commons/5/5b/Airbus_A380_first_flight_Qantas.jpg", // avion
+      "https://upload.wikimedia.org/wikipedia/commons/3/31/Large_cruise_ship_in_Grand_Harbour%2C_Malta.JPG", // brod
+      "https://upload.wikimedia.org/wikipedia/commons/1/12/Bicycle_Norco.jpg",  // bicikl
+    ]
+  };
+
+  // Koliko rundi želimo (može se menjati)
+  const totalRounds = 10;
+
+  // Elementi
+  const categoryContainer = document.getElementById("category-container");
+  const gameContainer = document.getElementById("game-container");
+  const currentImageEl = document.getElementById("current-image");
+  const roundNumberEl = document.getElementById("round-number");
+  const totalRoundsEl = document.getElementById("total-rounds");
+  const sofiaScoreEl = document.getElementById("sofia-score");
+  const matijaScoreEl = document.getElementById("matija-score");
+  const winnerEl = document.getElementById("winner");
+  const sofiaBtn = document.getElementById("sofia-btn");
+  const matijaBtn = document.getElementById("matija-btn");
+
+  // Dinamičke promenljive
+  let currentRound = 0;
+  let sofiaScore = 0;
+  let matijaScore = 0;
+  let validImages = []; // niz validnih linkova
+  let currentIndex = 0;
+
+  totalRoundsEl.textContent = totalRounds; // Upisujemo koliko će biti rundi
+
+  // Kad se klikne na dugme neke kategorije
+  const categoryButtons = document.querySelectorAll(".category-btn");
+  categoryButtons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const category = btn.getAttribute("data-category");
+      startGame(category);
+    });
+  });
+
+  // Glavna funkcija: učitava slike za kategoriju, proverava validnost, pokreće kviz
+  async function startGame(category) {
+    // Sakrijemo početni ekran, pokažemo gameContainer
+    categoryContainer.style.display = "none";
+    gameContainer.style.display = "block";
+
+    // Resetujemo sve
+    currentRound = 0;
+    sofiaScore = 0;
+    matijaScore = 0;
+    sofiaScoreEl.textContent = 0;
+    matijaScoreEl.textContent = 0;
+    winnerEl.textContent = "";
+
+    // Uzimamo sve slike iz izabrane kategorije
+    let images = imagesByCategory[category] || [];
+
+    // Proverimo validnost svake slike, asinhrono
+    const valid = await filterValidImages(images);
+
+    // Promešamo
+    shuffleArray(valid);
+
+    // Skraćujemo na onoliko koliko nam treba (npr. totalRounds)
+    validImages = valid.slice(0, totalRounds);
+
+    // Pokreni rundu
+    showNextImage();
+  }
+
+  // Provera da li link do slike postoji
+  function checkImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(url);   // uspeh
+      img.onerror = () => reject(url);   // greška (404 ili dr.)
+      img.src = url;
+    });
+  }
+
+  // Filtrira samo validne slike
+  async function filterValidImages(imageArray) {
+    const checks = imageArray.map(url => {
+      return checkImage(url)
+        .then(() => ({ url, valid: true }))
+        .catch(() => ({ url, valid: false }));
+    });
+
+    const results = await Promise.all(checks);
+    // zadrži samo validne
+    return results.filter(r => r.valid).map(r => r.url);
+  }
+
+  // Meša niz "in place" (Fisher–Yates)
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // Pokaži sledeću sliku
+  function showNextImage() {
+    currentRound++;
+    roundNumberEl.textContent = currentRound;
+
+    if (currentRound > totalRounds || currentIndex >= validImages.length) {
+      // kraj igre
+      declareWinner();
+      return;
     }
 
-    // Povećavanje rezultata za Sofiju
-    sofiaBtn.addEventListener('click', () => {
-      if (currentRound < totalRounds) {
-        sofiaScore++;
-        sofiaScoreSpan.textContent = sofiaScore;
-      }
-    });
+    // Uzmi sledeći URL
+    const nextUrl = validImages[currentIndex];
+    currentIndex++;
 
-    // Povećavanje rezultata za Matiju
-    matijaBtn.addEventListener('click', () => {
-      if (currentRound < totalRounds) {
-        matijaScore++;
-        matijaScoreSpan.textContent = matijaScore;
-      }
-    });
+    // Postavi u <img>
+    currentImageEl.src = nextUrl;
+  }
 
-    // Klik na "Sledeća slika"
-    nextBtn.addEventListener('click', () => {
-      currentRound++;
-      if (currentRound < totalRounds) {
-        loadNextImage();
-      } else {
-        // Ako je upravo završio 20. krug
-        declareWinner();
-      }
-    });
-
-    // Funkcija za prikaz pobednika
-    function declareWinner() {
-      // Sakrijemo dugme "Sledeća"
-      nextBtn.style.display = 'none';
-      if (sofiaScore > matijaScore) {
-        winnerDiv.textContent = "Pobednik je Sofia!";
-      } else if (matijaScore > sofiaScore) {
-        winnerDiv.textContent = "Pobednik je Matija!";
-      } else {
-        winnerDiv.textContent = "Nerešeno je!";
-      }
+  // Deklariši pobednika
+  function declareWinner() {
+    // Sakrijemo sliku ako želimo
+    currentImageEl.src = "";
+    if (sofiaScore > matijaScore) {
+      winnerEl.textContent = "Pobednik je Sofia!";
+    } else if (matijaScore > sofiaScore) {
+      winnerEl.textContent = "Pobednik je Matija!";
+    } else {
+      winnerEl.textContent = "Nerešeno!";
     }
+  }
 
-    // Pokrećemo sa prvom slikom
-    loadNextImage();
-  </script>
+  // Kad kliknemo "+1 Sofia", treba i da pređemo na sledeću sliku
+  sofiaBtn.addEventListener("click", () => {
+    if (currentRound <= totalRounds) {
+      sofiaScore++;
+      sofiaScoreEl.textContent = sofiaScore;
+      showNextImage();
+    }
+  });
+
+  // Kad kliknemo "+1 Matija", isto
+  matijaBtn.addEventListener("click", () => {
+    if (currentRound <= totalRounds) {
+      matijaScore++;
+      matijaScoreEl.textContent = matijaScore;
+      showNextImage();
+    }
+  });
+
+</script>
+
 </body>
 </html>
