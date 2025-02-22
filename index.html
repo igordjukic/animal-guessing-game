@@ -7,7 +7,8 @@
   <!-- Load React, ReactDOM, Framer Motion, Babel -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
+  <!-- Use production build of Framer Motion UMD; it attaches to window.FramerMotion -->
+  <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     /* Basic reset and styling */
@@ -215,7 +216,13 @@
     };
 
     const { useState, useEffect } = React;
-    const { motion, AnimatePresence } = window["framer-motion"];
+    // Use the correct global variable for Framer Motion:
+    const { motion, AnimatePresence } = window.FramerMotion || {};
+    if (!motion || !AnimatePresence) {
+      debugLog("Error: FramerMotion is not loaded properly.");
+    } else {
+      debugLog("FramerMotion loaded successfully.");
+    }
 
     debugLog("Starting App...");
 
@@ -294,6 +301,7 @@
                 </button>
               </motion.div>
             )}
+
             {screen === "game" && (
               <GameScreen
                 key="gameScreen"
