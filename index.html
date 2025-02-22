@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Guessing Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid black;
+            max-width: 80%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #scores {
+            font-size: 24px;
+            margin: 20px;
+        }
+        #result {
+            font-size: 28px;
+            color: green;
+            margin-top: 20px;
+        }
+        #fullscreenBtn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scores">
+        Sofija: <span id="sofijaScore">0</span> | Matija: <span id="matijaScore">0</span> | Round: <span id="round">1</span>/20
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <br>
+    <button onclick="awardPoint('sofija')">Sofija Guessed!</button>
+    <button onclick="awardPoint('matija')">Matija Guessed!</button>
+    <button id="fullscreenBtn" onclick="toggleFullScreen()">Full Screen</button>
+    <div id="result"></div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const sofijaScoreEl = document.getElementById('sofijaScore');
+        const matijaScoreEl = document.getElementById('matijaScore');
+        const roundEl = document.getElementById('round');
+        const resultEl = document.getElementById('result');
+
+        // Adjust canvas size dynamically
+        canvas.width = window.innerWidth * 0.8;
+        canvas.height = window.innerHeight * 0.6;
+
+        const animals = [
+            'https://pixnio.com/free-images/animals/mammals/tiger-lying-on-the-ground.jpg',
+            'https://pixnio.com/free-images/animals/birds/eagle-in-flight.jpg',
+            'https://pixnio.com/free-images/animals/mammals/elephant-walking-in-savanna.jpg',
+            'https://pixnio.com/free-images/animals/mammals/lion-resting.jpg',
+            'https://pixnio.com/free-images/animals/birds/penguin-standing.jpg',
+            'https://pixnio.com/free-images/animals/mammals/giraffe-in-the-wild.jpg',
+            'https://pixnio.com/free-images/animals/mammals/zebra-grazing.jpg',
+            'https://pixnio.com/free-images/animals/mammals/bear-in-forest.jpg',
+            'https://pixnio.com/free-images/animals/mammals/wolf-in-snow.jpg',
+            'https://pixnio.com/free-images/animals/birds/parrot-colorful.jpg',
+            'https://pixnio.com/free-images/animals/mammals/rhino-in-savanna.jpg',
+            'https://pixnio.com/free-images/animals/mammals/kangaroo-hopping.jpg',
+            'https://pixnio.com/free-images/animals/mammals/panda-eating-bamboo.jpg',
+            'https://pixnio.com/free-images/animals/mammals/leopard-on-tree.jpg',
+            'https://pixnio.com/free-images/animals/birds/owl-perched.jpg',
+            'https://pixnio.com/free-images/animals/mammals/monkey-in-tree.jpg',
+            'https://pixnio.com/free-images/animals/mammals/hippo-in-water.jpg',
+            'https://pixnio.com/free-images/animals/mammals/deer-in-forest.jpg',
+            'https://pixnio.com/free-images/animals/mammals/cheetah-running.jpg',
+            'https://pixnio.com/free-images/animals/birds/flamingo-standing.jpg'
+        ];
+
+        let sofijaScore = 0;
+        let matijaScore = 0;
+        let currentRound = 0;
+        let currentImage = new Image();
+
+        // Load the first image
+        function startRound() {
+            if (currentRound < 20) {
+                currentImage.src = animals[currentRound];
+                currentImage.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+                };
+                roundEl.textContent = currentRound + 1;
+            } else {
+                endGame();
+            }
+        }
+
+        // Award a point and move to the next round
+        function awardPoint(player) {
+            if (currentRound >= 20) return;
+
+            if (player === 'sofija') {
+                sofijaScore++;
+                sofijaScoreEl.textContent = sofijaScore;
+            } else if (player === 'matija') {
+                matijaScore++;
+                matijaScoreEl.textContent = matijaScore;
+            }
+
+            currentRound++;
+            startRound();
+        }
+
+        // End the game and declare a winner
+        function endGame() {
+            let winner = '';
+            if (sofijaScore > matijaScore) {
+                winner = 'Sofija wins!';
+            } else if (matijaScore > sofijaScore) {
+                winner = 'Matija wins!';
+            } else {
+                winner = 'It\'s a tie!';
+            }
+            resultEl.textContent = `Game Over! ${winner} (Sofija: ${sofijaScore}, Matija: ${matijaScore})`;
+        }
+
+        // Toggle full-screen mode
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+
+        // Adjust canvas size on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = window.innerHeight * 0.6;
+            if (currentRound < 20) {
+                ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+            }
+        });
+
+        // Start the game
+        startRound();
+    </script>
+</body>
+</html>
