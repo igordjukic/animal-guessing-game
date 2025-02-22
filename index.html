@@ -1,162 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal Guessing Game</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        canvas {
-            border: 1px solid black;
-            max-width: 80%;
-            max-height: 60vh;
-            object-fit: contain;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 18px;
-            margin: 10px;
-            cursor: pointer;
-        }
-        #scores {
-            font-size: 24px;
-            margin: 20px;
-        }
-        #result {
-            font-size: 28px;
-            color: green;
-            margin-top: 20px;
-        }
-        #fullscreenBtn {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Kviz - Pogodi Životinju</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    h1 {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 90%;
+      margin-top: 20px;
+    }
+
+    #canvas-container {
+      position: relative;
+      width: 400px;
+      height: 300px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #animal-image {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 10px;
+    }
+
+    .score-buttons {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .score-buttons button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .score-buttons button:hover {
+      opacity: 0.8;
+    }
+
+    .next-button {
+      padding: 10px 30px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      transition: 0.3s;
+      background-color: #00d775;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .next-button:hover {
+      background-color: #00b566;
+    }
+
+    #scores {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    #winner {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #e62e2e;
+    }
+  </style>
 </head>
 <body>
-    <div id="scores">
-        Sofija: <span id="sofijaScore">0</span> | Matija: <span id="matijaScore">0</span> | Round: <span id="round">1</span>/20
+  <h1>Pogodi Životinju</h1>
+  <div id="game-container">
+    <div id="canvas-container">
+      <!-- Ovdje se prikazuje slika životinje -->
+      <img id="animal-image" src="" alt="Trenutna životinja">
     </div>
-    <canvas id="gameCanvas"></canvas>
-    <br>
-    <button onclick="awardPoint('sofija')">Sofija Guessed!</button>
-    <button onclick="awardPoint('matija')">Matija Guessed!</button>
-    <button id="fullscreenBtn" onclick="toggleFullScreen()">Full Screen</button>
-    <div id="result"></div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const sofijaScoreEl = document.getElementById('sofijaScore');
-        const matijaScoreEl = document.getElementById('matijaScore');
-        const roundEl = document.getElementById('round');
-        const resultEl = document.getElementById('result');
+    <div id="scores">
+      Sofia: <span id="sofia-score">0</span> | 
+      Matija: <span id="matija-score">0</span> | 
+      Krug: <span id="round-number">0</span>/20
+    </div>
 
-        canvas.width = window.innerWidth * 0.8;
-        canvas.height = window.innerHeight * 0.6;
+    <div class="score-buttons">
+      <button id="sofia-btn" style="background-color: #f39c12; color: #fff;">+1 Sofia</button>
+      <button id="matija-btn" style="background-color: #3498db; color: #fff;">+1 Matija</button>
+    </div>
 
-        // Updated animal images from Unsplash (HTTPS, CORS-friendly)
-        const animals = [
-            'https://images.unsplash.com/photo-1518791841217-8f162f1e1131', // Cat
-            'https://images.unsplash.com/photo-1533738363-b7f9aef128ce', // Dog
-            'https://images.unsplash.com/photo-1475809910419-6e9d13e06942', // Elephant
-            'https://images.unsplash.com/photo-1546182990-dffeafbe841d', // Lion
-            'https://images.unsplash.com/photo-1561948955-570b270e7c36', // Penguin
-            'https://images.unsplash.com/photo-1505069446780-4ef442b5207f', // Giraffe
-            'https://images.unsplash.com/photo-1561731216-c1a6b8518f81', // Zebra
-            'https://images.unsplash.com/photo-1501748292235-4bcefabb9b8d', // Bear
-            'https://images.unsplash.com/photo-1548004936-3f10b891e216', // Wolf
-            'https://images.unsplash.com/photo-1601148874029-4c3b6a7174c9', // Parrot
-            'https://images.unsplash.com/photo-1551829466-62e71f629fdb', // Rhino
-            'https://images.unsplash.com/photo-1564349685257-1be88f873402', // Kangaroo
-            'https://images.unsplash.com/photo-1592595896550-12c51e832e58', // Panda
-            'https://images.unsplash.com/photo-1540574163026-643ea20f25cd', // Leopard
-            'https://images.unsplash.com/photo-1507666664347-5483f66b10da', // Owl
-            'https://images.unsplash.com/photo-1540575467063-1f4676f88e2b', // Monkey
-            'https://images.unsplash.com/photo-1596854407944-bf87f6dd7ec1', // Hippo
-            'https://images.unsplash.com/photo-1547721064-da6cfb626d0b', // Deer
-            'https://images.unsplash.com/photo-1561948955-215b405edb72', // Cheetah
-            'https://images.unsplash.com/photo-1564085352509-90e0b9c4f Hari', // Flamingo
-        ];
+    <button id="next-btn" class="next-button">Sledeća slika</button>
+    <div id="winner"></div>
+  </div>
 
-        let sofijaScore = 0;
-        let matijaScore = 0;
-        let currentRound = 0;
-        let currentImage = new Image();
+  <script>
+    // 50 slika (Wikimedia Commons)
+    const allAnimalImages = [
+      "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg",  // Elephant
+      "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg", // Lion
+      "https://upload.wikimedia.org/wikipedia/commons/5/56/Tiger.50.jpg",                // Tiger
+      "https://upload.wikimedia.org/wikipedia/commons/9/9f/Giraffe_standing.jpg",        // Giraffe
+      "https://upload.wikimedia.org/wikipedia/commons/f/f8/Plains_Zebra_Equus_quagga.jpg", // Zebra
+      "https://upload.wikimedia.org/wikipedia/commons/0/0c/Kangaroo_Australia_01.jpg",   // Kangaroo
+      "https://upload.wikimedia.org/wikipedia/commons/4/49/Koala_climbing_tree.jpg",     // Koala
+      "https://upload.wikimedia.org/wikipedia/commons/7/79/2010-kodiak-bear-1.jpg",      // Bear
+      "https://upload.wikimedia.org/wikipedia/commons/2/2c/Canis_lupus_occidentalis.jpg",// Wolf
+      "https://upload.wikimedia.org/wikipedia/commons/1/16/Vulpes_vulpes_laying_in_snow.jpg", // Fox
+      "https://upload.wikimedia.org/wikipedia/commons/4/44/Horse_%28kobenhavn%29.jpg",   // Horse
+      "https://upload.wikimedia.org/wikipedia/commons/6/6f/Vervet_monkey_KNP.jpg",       // Monkey
+      "https://upload.wikimedia.org/wikipedia/commons/a/a1/Male_gorilla_in_SF_zoo.jpg",  // Gorilla
+      "https://upload.wikimedia.org/wikipedia/commons/0/0f/Grosser_Panda.JPG",           // Panda
+      "https://upload.wikimedia.org/wikipedia/commons/6/6e/Leopard_africa.jpg",          // Leopard
+      "https://upload.wikimedia.org/wikipedia/commons/d/d0/Cheetah_Kruger.jpg",          // Cheetah
+      "https://upload.wikimedia.org/wikipedia/commons/1/1f/White_rhinoceros06_-_melbourne_zoo.jpg", // Rhino
+      "https://upload.wikimedia.org/wikipedia/commons/5/53/Hippopotamus_in_South_Africa_open_mouth.jpg", // Hippo
+      "https://upload.wikimedia.org/wikipedia/commons/d/d9/White-tailed_deer.jpg",       // Deer
+      "https://upload.wikimedia.org/wikipedia/commons/c/cf/Alces_alces_in_Baxter_State_Park.jpg",    // Moose
+      "https://upload.wikimedia.org/wikipedia/commons/d/d3/American_bison_k5680-1.jpg",  // Buffalo
+      "https://upload.wikimedia.org/wikipedia/commons/7/74/Camel_profile.jpg",           // Camel
+      "https://upload.wikimedia.org/wikipedia/commons/f/f8/Sheep_lawn.jpg",              // Sheep
+      "https://upload.wikimedia.org/wikipedia/commons/c/c9/Billy_Goat.jpg",              // Goat
+      "https://upload.wikimedia.org/wikipedia/commons/3/32/Donkey_2016_cropped.jpg",     // Donkey
+      "https://upload.wikimedia.org/wikipedia/commons/6/6e/Golde33443.jpg",              // Dog
+      "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",                   // Cat
+      "https://upload.wikimedia.org/wikipedia/commons/b/b4/Hen_in_Australia.jpg",        // Chicken
+      "https://upload.wikimedia.org/wikipedia/commons/5/54/Mallard2.jpg",                // Duck
+      "https://upload.wikimedia.org/wikipedia/commons/d/db/Grey_Lag_Goose.jpg",          // Goose
+      "https://upload.wikimedia.org/wikipedia/commons/0/02/Pig_3.jpg",                   // Pig
+      "https://upload.wikimedia.org/wikipedia/commons/7/7e/Cow_female_black_white.jpg",  // Cow
+      "https://upload.wikimedia.org/wikipedia/commons/b/b1/Wild_rabbit_us.jpg",          // Rabbit
+      "https://upload.wikimedia.org/wikipedia/commons/1/16/Erinaceus_europaeus_LC0259.jpg", // Hedgehog
+      "https://upload.wikimedia.org/wikipedia/commons/0/08/Squirrel_posing.jpg",         // Squirrel
+      "https://upload.wikimedia.org/wikipedia/commons/4/49/Bottlenose_dolphin_KSC04pd0178.jpg", // Dolphin
+      "https://upload.wikimedia.org/wikipedia/commons/5/5f/Humpback_whale_underwater_shot.jpg",      // Whale
+      "https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg",             // Shark
+      "https://upload.wikimedia.org/wikipedia/commons/6/6f/African_penguins_Boulder_Bay_02.jpg",     // Penguin
+      "https://upload.wikimedia.org/wikipedia/commons/9/9e/Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg", // Flamingo
+      "https://upload.wikimedia.org/wikipedia/commons/e/e2/Bald_Eagle_Portrait.jpg",     // Eagle
+      "https://upload.wikimedia.org/wikipedia/commons/c/c3/Bubo_bubo_6_%28Martin_Mecnarowski%29.jpg", // Owl
+      "https://upload.wikimedia.org/wikipedia/commons/9/9a/Common_Python.jpg",           // Snake
+      "https://upload.wikimedia.org/wikipedia/commons/1/19/Red_eyed_tree_frog_edit2.jpg",// Frog
+      "https://upload.wikimedia.org/wikipedia/commons/3/3a/Gal%C3%A1pagos_Giant_Tortoise_Shell.jpg", // Tortoise
+      "https://upload.wikimedia.org/wikipedia/commons/2/25/NileCrocodile.jpg",           // Crocodile
+      "https://upload.wikimedia.org/wikipedia/commons/8/84/Chameleon_kenya.jpg",         // Chameleon
+      "https://upload.wikimedia.org/wikipedia/commons/e/e7/Artibeus_jamaicensis.jpg",    // Bat
+      "https://upload.wikimedia.org/wikipedia/commons/6/68/Male_Elephant_Seal.jpg",      // Elephant seal
+      "https://upload.wikimedia.org/wikipedia/commons/6/6b/California_Sea_Lion_at_Point_Lobos.jpg" // Sea Lion
+    ];
 
-        function startRound() {
-            if (currentRound < 20) {
-                currentImage.src = animals[currentRound];
-                currentImage.onload = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
-                };
-                currentImage.onerror = () => {
-                    console.log(`Failed to load image: ${animals[currentRound]}`);
-                    ctx.fillText("Image failed to load", canvas.width / 2, canvas.height / 2);
-                };
-                roundEl.textContent = currentRound + 1;
-            } else {
-                endGame();
-            }
-        }
+    const totalRounds = 20; // Koliko slika/krugova želimo
+    let currentRound = 0;
+    let sofiaScore = 0;
+    let matijaScore = 0;
 
-        function awardPoint(player) {
-            if (currentRound >= 20) return;
+    // Umesto da koristimo sve 50 redom, možemo i da izmešamo niz ili izvučemo slučajnih 20
+    // Za demonstraciju ćemo samo prikazivati PRVIH 20 iz liste, ali možeš prilagoditi.
+    // Ili napravi random redosled:
+    // allAnimalImages.sort(() => 0.5 - Math.random());
 
-            if (player === 'sofija') {
-                sofijaScore++;
-                sofijaScoreEl.textContent = sofijaScore;
-            } else if (player === 'matija') {
-                matijaScore++;
-                matijaScoreEl.textContent = matijaScore;
-            }
+    // Npr. ovde ćemo uzeti prvih 20.
+    const gameImages = allAnimalImages.slice(0, 20);
 
-            currentRound++;
-            startRound();
-        }
+    const sofiaBtn = document.getElementById('sofia-btn');
+    const matijaBtn = document.getElementById('matija-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const animalImage = document.getElementById('animal-image');
+    const sofiaScoreSpan = document.getElementById('sofia-score');
+    const matijaScoreSpan = document.getElementById('matija-score');
+    const roundNumberSpan = document.getElementById('round-number');
+    const winnerDiv = document.getElementById('winner');
 
-        function endGame() {
-            let winner = '';
-            if (sofijaScore > matijaScore) {
-                winner = 'Sofija wins!';
-            } else if (matijaScore > sofijaScore) {
-                winner = 'Matija wins!';
-            } else {
-                winner = 'It\'s a tie!';
-            }
-            resultEl.textContent = `Game Over! ${winner} (Sofija: ${sofijaScore}, Matija: ${matijaScore})`;
-        }
+    // Funkcija za učitavanje sledeće slike
+    function loadNextImage() {
+      if (currentRound < totalRounds) {
+        animalImage.src = gameImages[currentRound];
+        roundNumberSpan.textContent = currentRound + 1; 
+      } else {
+        // Kviz je gotov, utvrdimo pobednika
+        declareWinner();
+      }
+    }
 
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
+    // Povećavanje rezultata za Sofiju
+    sofiaBtn.addEventListener('click', () => {
+      if (currentRound < totalRounds) {
+        sofiaScore++;
+        sofiaScoreSpan.textContent = sofiaScore;
+      }
+    });
 
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth * 0.8;
-            canvas.height = window.innerHeight * 0.6;
-            if (currentRound < 20) {
-                ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
-            }
-        });
+    // Povećavanje rezultata za Matiju
+    matijaBtn.addEventListener('click', () => {
+      if (currentRound < totalRounds) {
+        matijaScore++;
+        matijaScoreSpan.textContent = matijaScore;
+      }
+    });
 
-        startRound();
-    </script>
+    // Klik na "Sledeća slika"
+    nextBtn.addEventListener('click', () => {
+      currentRound++;
+      if (currentRound < totalRounds) {
+        loadNextImage();
+      } else {
+        // Ako je upravo završio 20. krug
+        declareWinner();
+      }
+    });
+
+    // Funkcija za prikaz pobednika
+    function declareWinner() {
+      // Sakrijemo dugme "Sledeća"
+      nextBtn.style.display = 'none';
+      if (sofiaScore > matijaScore) {
+        winnerDiv.textContent = "Pobednik je Sofia!";
+      } else if (matijaScore > sofiaScore) {
+        winnerDiv.textContent = "Pobednik je Matija!";
+      } else {
+        winnerDiv.textContent = "Nerešeno je!";
+      }
+    }
+
+    // Pokrećemo sa prvom slikom
+    loadNextImage();
+  </script>
 </body>
 </html>
