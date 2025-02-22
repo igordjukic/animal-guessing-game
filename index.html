@@ -64,31 +64,31 @@
         const roundEl = document.getElementById('round');
         const resultEl = document.getElementById('result');
 
-        // Adjust canvas size dynamically
         canvas.width = window.innerWidth * 0.8;
         canvas.height = window.innerHeight * 0.6;
 
+        // Updated animal images from Unsplash (HTTPS, CORS-friendly)
         const animals = [
-            'https://pixnio.com/free-images/animals/mammals/tiger-lying-on-the-ground.jpg',
-            'https://pixnio.com/free-images/animals/birds/eagle-in-flight.jpg',
-            'https://pixnio.com/free-images/animals/mammals/elephant-walking-in-savanna.jpg',
-            'https://pixnio.com/free-images/animals/mammals/lion-resting.jpg',
-            'https://pixnio.com/free-images/animals/birds/penguin-standing.jpg',
-            'https://pixnio.com/free-images/animals/mammals/giraffe-in-the-wild.jpg',
-            'https://pixnio.com/free-images/animals/mammals/zebra-grazing.jpg',
-            'https://pixnio.com/free-images/animals/mammals/bear-in-forest.jpg',
-            'https://pixnio.com/free-images/animals/mammals/wolf-in-snow.jpg',
-            'https://pixnio.com/free-images/animals/birds/parrot-colorful.jpg',
-            'https://pixnio.com/free-images/animals/mammals/rhino-in-savanna.jpg',
-            'https://pixnio.com/free-images/animals/mammals/kangaroo-hopping.jpg',
-            'https://pixnio.com/free-images/animals/mammals/panda-eating-bamboo.jpg',
-            'https://pixnio.com/free-images/animals/mammals/leopard-on-tree.jpg',
-            'https://pixnio.com/free-images/animals/birds/owl-perched.jpg',
-            'https://pixnio.com/free-images/animals/mammals/monkey-in-tree.jpg',
-            'https://pixnio.com/free-images/animals/mammals/hippo-in-water.jpg',
-            'https://pixnio.com/free-images/animals/mammals/deer-in-forest.jpg',
-            'https://pixnio.com/free-images/animals/mammals/cheetah-running.jpg',
-            'https://pixnio.com/free-images/animals/birds/flamingo-standing.jpg'
+            'https://images.unsplash.com/photo-1518791841217-8f162f1e1131', // Cat
+            'https://images.unsplash.com/photo-1533738363-b7f9aef128ce', // Dog
+            'https://images.unsplash.com/photo-1475809910419-6e9d13e06942', // Elephant
+            'https://images.unsplash.com/photo-1546182990-dffeafbe841d', // Lion
+            'https://images.unsplash.com/photo-1561948955-570b270e7c36', // Penguin
+            'https://images.unsplash.com/photo-1505069446780-4ef442b5207f', // Giraffe
+            'https://images.unsplash.com/photo-1561731216-c1a6b8518f81', // Zebra
+            'https://images.unsplash.com/photo-1501748292235-4bcefabb9b8d', // Bear
+            'https://images.unsplash.com/photo-1548004936-3f10b891e216', // Wolf
+            'https://images.unsplash.com/photo-1601148874029-4c3b6a7174c9', // Parrot
+            'https://images.unsplash.com/photo-1551829466-62e71f629fdb', // Rhino
+            'https://images.unsplash.com/photo-1564349685257-1be88f873402', // Kangaroo
+            'https://images.unsplash.com/photo-1592595896550-12c51e832e58', // Panda
+            'https://images.unsplash.com/photo-1540574163026-643ea20f25cd', // Leopard
+            'https://images.unsplash.com/photo-1507666664347-5483f66b10da', // Owl
+            'https://images.unsplash.com/photo-1540575467063-1f4676f88e2b', // Monkey
+            'https://images.unsplash.com/photo-1596854407944-bf87f6dd7ec1', // Hippo
+            'https://images.unsplash.com/photo-1547721064-da6cfb626d0b', // Deer
+            'https://images.unsplash.com/photo-1561948955-215b405edb72', // Cheetah
+            'https://images.unsplash.com/photo-1564085352509-90e0b9c4f Hari', // Flamingo
         ];
 
         let sofijaScore = 0;
@@ -96,7 +96,6 @@
         let currentRound = 0;
         let currentImage = new Image();
 
-        // Load the first image
         function startRound() {
             if (currentRound < 20) {
                 currentImage.src = animals[currentRound];
@@ -104,13 +103,16 @@
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
                 };
+                currentImage.onerror = () => {
+                    console.log(`Failed to load image: ${animals[currentRound]}`);
+                    ctx.fillText("Image failed to load", canvas.width / 2, canvas.height / 2);
+                };
                 roundEl.textContent = currentRound + 1;
             } else {
                 endGame();
             }
         }
 
-        // Award a point and move to the next round
         function awardPoint(player) {
             if (currentRound >= 20) return;
 
@@ -126,7 +128,6 @@
             startRound();
         }
 
-        // End the game and declare a winner
         function endGame() {
             let winner = '';
             if (sofijaScore > matijaScore) {
@@ -139,7 +140,6 @@
             resultEl.textContent = `Game Over! ${winner} (Sofija: ${sofijaScore}, Matija: ${matijaScore})`;
         }
 
-        // Toggle full-screen mode
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -148,7 +148,6 @@
             }
         }
 
-        // Adjust canvas size on window resize
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth * 0.8;
             canvas.height = window.innerHeight * 0.6;
@@ -157,7 +156,6 @@
             }
         });
 
-        // Start the game
         startRound();
     </script>
 </body>
