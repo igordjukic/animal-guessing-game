@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Guess The Image Game</title>
+  <title>Guess The Image Game (Debug Mode)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- React, ReactDOM, Framer Motion, Babel -->
@@ -183,7 +183,7 @@
 <body>
   <div id="root"></div>
 
-  <!-- Our React code is transpiled by Babel -->
+  <!-- React code with Babel transpilation and added debug logging -->
   <script type="text/babel">
     const { useState, useEffect } = React;
     const { motion, AnimatePresence } = window["framer-motion"];
@@ -191,21 +191,24 @@
     const TOTAL_ROUNDS = 10;
     const UNSPLASH_ACCESS_KEY = "1-SnSlQgPjJHmFfy1v5K3Xqm9cWXIk7xkGq5nILLFW0";
 
-    // Toggle fullscreen mode
+    // Toggle fullscreen mode and log the event
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen?.(); 
+        console.log("Requesting fullscreen...");
+        document.documentElement.requestFullscreen?.();
       } else {
+        console.log("Exiting fullscreen...");
         document.exitFullscreen?.();
       }
     }
 
     function App() {
-      // screen: "category" or "game"
+      // "screen" is either "category" or "game"
       const [screen, setScreen] = useState("category");
       const [selectedCategory, setSelectedCategory] = useState("");
 
       const handleCategoryClick = (category) => {
+        console.log("Category selected:", category);
         setSelectedCategory(category);
         setScreen("game");
       };
@@ -278,6 +281,7 @@
                 key="gameScreen"
                 category={selectedCategory}
                 onBack={() => {
+                  console.log("Returning to category selection.");
                   setScreen("category");
                   setSelectedCategory("");
                 }}
@@ -296,9 +300,11 @@
       const [currentIndex, setCurrentIndex] = useState(0);
       const [winner, setWinner] = useState("");
 
-      // Fetch images when category changes
+      // Log when GameScreen mounts
       useEffect(() => {
+        console.log("GameScreen mounted for category:", category);
         fetchImages(category, TOTAL_ROUNDS).then((urls) => {
+          console.log("Fetched images:", urls);
           setImageUrls(urls || []);
           setRound(0);
           setCurrentIndex(0);
@@ -306,23 +312,31 @@
         });
       }, [category]);
 
-      // End game if rounds exceeded
       useEffect(() => {
+        console.log("Round:", round, "CurrentIndex:", currentIndex, "Total images:", imageUrls.length);
         if (round > TOTAL_ROUNDS || currentIndex >= imageUrls.length) {
           declareWinner();
         }
       }, [round, currentIndex, imageUrls]);
 
       const handleNext = (scoreFor) => {
+        console.log("Button clicked for:", scoreFor);
         if (!winner) {
           setRound((r) => r + 1);
-          if (scoreFor === "sofia") setSofiaScore((s) => s + 1);
-          if (scoreFor === "matija") setMatijaScore((m) => m + 1);
+          if (scoreFor === "sofia") {
+            setSofiaScore((s) => s + 1);
+            console.log("Incremented Sofia's score");
+          }
+          if (scoreFor === "matija") {
+            setMatijaScore((m) => m + 1);
+            console.log("Incremented Matija's score");
+          }
           setCurrentIndex((idx) => idx + 1);
         }
       };
 
       const handleSkip = () => {
+        console.log("Skip button pressed");
         if (!winner) {
           setRound((r) => r + 1);
           setCurrentIndex((idx) => idx + 1);
@@ -336,6 +350,7 @@
         else if (matijaScore > sofiaScore) result = "Pobjednik je Matija!";
         else result = "Nerešeno!";
         setWinner(result);
+        console.log("Winner declared:", result);
       };
 
       const currentImage = imageUrls[currentIndex] || "";
@@ -410,9 +425,10 @@
       );
     }
 
-    // Fetch images using Unsplash API
+    // Fetch images from Unsplash API with debug logging
     async function fetchImages(query, count) {
       const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&count=${count}&client_id=${UNSPLASH_ACCESS_KEY}`;
+      console.log("Fetching images from URL:", url);
       try {
         const res = await fetch(url);
         if (!res.ok) {
@@ -420,6 +436,7 @@
           return [];
         }
         const data = await res.json();
+        console.log("Fetched data:", data);
         return data.map((item) => item.urls.regular);
       } catch (err) {
         console.error("Fetch error:", err);
@@ -427,7 +444,7 @@
       }
     }
 
-    // Render the App
+    // Render the React App
     const rootEl = document.getElementById("root");
     ReactDOM.createRoot(rootEl).render(<App />);
   </script>
