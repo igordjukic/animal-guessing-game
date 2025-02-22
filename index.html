@@ -4,19 +4,14 @@
   <meta charset="UTF-8" />
   <title>Guess The Image Game - Debug Mode</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Load React, ReactDOM, Framer Motion, Babel -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <!-- Use production build of Framer Motion UMD; it attaches to window.FramerMotion -->
-  <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Load React, ReactDOM, Babel, and Framer Motion from jsDelivr -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@4.1.17/dist/framer-motion.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
   <style>
     /* Basic reset and styling */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: sans-serif;
       background: linear-gradient(135deg, #f6d365, #fda085);
@@ -26,12 +21,8 @@
       min-height: 100vh;
       color: #333;
     }
-    #root {
-      width: 100%;
-      max-width: 1200px;
-      margin: 20px auto;
-    }
-    /* Debug panel styles */
+    #root { width: 100%; max-width: 1200px; margin: 20px auto; }
+    /* Debug panel */
     #debug-output {
       position: fixed;
       bottom: 0;
@@ -58,9 +49,7 @@
       align-items: center;
       gap: 15px;
     }
-    .category-screen h2 {
-      margin-bottom: 10px;
-    }
+    .category-screen h2 { margin-bottom: 10px; }
     .cat-button {
       width: 100%;
       padding: 15px;
@@ -72,16 +61,9 @@
       background: #3498db;
       transition: 0.3s;
     }
-    .cat-button:hover {
-      opacity: 0.8;
-    }
-    .cat-sub {
-      background: #7f8c8d;
-      margin-left: 20px;
-    }
-    hr {
-      width: 100%;
-    }
+    .cat-button:hover { opacity: 0.8; }
+    .cat-sub { background: #7f8c8d; margin-left: 20px; }
+    hr { width: 100%; }
     /* Game Screen Layout (landscape) */
     .game-container {
       display: flex;
@@ -112,10 +94,8 @@
       cursor: pointer;
       transition: 0.3s;
     }
-    .fullscreen-btn:hover {
-      opacity: 0.8;
-    }
-    /* Left Side: Image */
+    .fullscreen-btn:hover { opacity: 0.8; }
+    /* Left side: image */
     .game-left {
       flex: 1;
       display: flex;
@@ -139,7 +119,7 @@
       width: 100%;
       height: 100%;
     }
-    /* Right Side: Controls */
+    /* Right side: controls */
     .game-right {
       flex: 1;
       display: flex;
@@ -148,17 +128,9 @@
       justify-content: flex-start;
       gap: 20px;
     }
-    .score-panel {
-      text-align: center;
-      font-size: 18px;
-    }
-    .score-buttons,
-    .navigation-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    .score-btn,
-    .nav-btn {
+    .score-panel { text-align: center; font-size: 18px; }
+    .score-buttons, .navigation-buttons { display: flex; gap: 10px; }
+    .score-btn, .nav-btn {
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -168,27 +140,12 @@
       transition: 0.3s;
       text-align: center;
     }
-    .score-btn:hover,
-    .nav-btn:hover {
-      opacity: 0.8;
-    }
-    .sofia-btn {
-      background-color: #f39c12;
-    }
-    .matija-btn {
-      background-color: #3498db;
-    }
-    .skip-btn {
-      background-color: #7f8c8d;
-    }
-    .back-btn {
-      background-color: #e74c3c;
-    }
-    .winner {
-      font-size: 20px;
-      font-weight: bold;
-      color: #d35400;
-    }
+    .score-btn:hover, .nav-btn:hover { opacity: 0.8; }
+    .sofia-btn { background-color: #f39c12; }
+    .matija-btn { background-color: #3498db; }
+    .skip-btn { background-color: #7f8c8d; }
+    .back-btn { background-color: #e74c3c; }
+    .winner { font-size: 20px; font-weight: bold; color: #d35400; }
   </style>
 </head>
 <body>
@@ -216,7 +173,7 @@
     };
 
     const { useState, useEffect } = React;
-    // Use the correct global variable for Framer Motion:
+    // Use Framer Motion from the jsDelivr-loaded global
     const { motion, AnimatePresence } = window.FramerMotion || {};
     if (!motion || !AnimatePresence) {
       debugLog("Error: FramerMotion is not loaded properly.");
