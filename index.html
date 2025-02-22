@@ -2,47 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Igra Pogađanja - LoremFlickr</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guess the Image Game - Unsplash API</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* Minimalni stil, landscape layout */
+    /* Reset & Basic Styling */
     * {
       box-sizing: border-box;
-      margin: 0; 
+      margin: 0;
       padding: 0;
     }
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #f6d365, #fda085);
       min-height: 100vh;
-      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 0;
+      color: #333;
     }
     h1 {
       margin-top: 20px;
       text-align: center;
     }
-    #category-container, #game-container {
+    /* Category Selection Container */
+    #category-container {
+      background: #fff;
+      width: 90%;
+      max-width: 600px;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .category-btn {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 18px;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .category-btn:hover {
+      opacity: 0.85;
+    }
+    /* Game Container (Landscape Layout) */
+    #game-container {
+      display: none; /* Hidden until category is selected */
       background: #fff;
       width: 90%;
       max-width: 1000px;
       margin-top: 20px;
+      padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-    /* Landscape raspored za #game-container */
-    #game-container {
-      display: none; /* skriven dok se ne izabere kategorija */
+      display: flex;
       flex-direction: row;
       justify-content: space-around;
       align-items: stretch;
       gap: 20px;
     }
-    /* Levo: slika */
+    /* Left Side: Image Display */
     #game-left {
       flex: 1;
       display: flex;
@@ -64,18 +87,18 @@
       max-width: 100%;
       max-height: 100%;
     }
-    /* Desno: runde, skorovi, dugmad */
+    /* Right Side: Game Info, Scores, and Buttons */
     #game-right {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
       align-items: center;
+      justify-content: flex-start;
     }
     #game-info {
-      text-align: center;
       margin-bottom: 10px;
       font-size: 18px;
+      text-align: center;
     }
     #scores {
       margin-bottom: 20px;
@@ -86,8 +109,8 @@
       width: 100%;
       display: flex;
       justify-content: space-around;
-      margin-bottom: 20px;
       gap: 10px;
+      margin-bottom: 20px;
     }
     .score-btn {
       flex: 1;
@@ -122,53 +145,45 @@
   </style>
 </head>
 <body>
-
-  <h1>Igra Pogađanja - LoremFlickr</h1>
-
-  <!-- Izbor kategorije -->
+  <h1>Guess the Image Game</h1>
+  
+  <!-- Category Selection -->
   <div id="category-container">
-    <p>Odaberite kategoriju za igru:</p>
-    <!-- Atribut data-category određuje ključnu reč za LoremFlickr -->
-    <button class="category-btn" data-category="animals">Životinje</button>
-    <button class="category-btn" data-category="objects">Predmeti</button>
+    <p>Select a category:</p>
+    <button class="category-btn" data-category="animals">Animals</button>
+    <button class="category-btn" data-category="objects">Objects</button>
     <button class="category-btn" data-category="transport">Transport</button>
   </div>
-
-  <!-- Glavni kontejner igre - landscape layout -->
+  
+  <!-- Game Container (Landscape Layout) -->
   <div id="game-container">
-    <!-- Leva strana: slika -->
+    <!-- Left Side: Image -->
     <div id="game-left">
       <div id="image-container">
-        <img id="current-image" src="" alt="slika">
+        <img id="current-image" src="" alt="Image">
       </div>
     </div>
-
-    <!-- Desna strana: runde, skorovi, dugmad -->
+    <!-- Right Side: Game Info, Scores, & Buttons -->
     <div id="game-right">
-      <div id="game-info">
-        Runda: <span id="round-number">0</span>/<span id="total-rounds">10</span>
-      </div>
-      <div id="scores">
-        Sofia: <span id="sofia-score">0</span> |
-        Matija: <span id="matija-score">0</span>
-      </div>
+      <div id="game-info">Round: <span id="round-number">0</span>/<span id="total-rounds">10</span></div>
+      <div id="scores">Sofia: <span id="sofia-score">0</span> | Matija: <span id="matija-score">0</span></div>
       <div class="score-buttons">
         <button class="score-btn sofia" id="sofia-btn">+1 Sofia</button>
         <button class="score-btn matija" id="matija-btn">+1 Matija</button>
       </div>
       <div class="back-button-container">
-        <button class="score-btn back-btn" id="back-btn">Nazad</button>
+        <button class="score-btn back-btn" id="back-btn">Back</button>
       </div>
       <div id="winner"></div>
     </div>
   </div>
-
+  
   <script>
-    // Podesite broj rundi
+    // Set total rounds for the game
     const totalRounds = 10;
     document.getElementById("total-rounds").textContent = totalRounds;
-
-    // Selektori iz DOM-a
+    
+    // DOM element selectors
     const categoryContainer = document.getElementById("category-container");
     const gameContainer = document.getElementById("game-container");
     const currentImageEl = document.getElementById("current-image");
@@ -179,50 +194,46 @@
     const sofiaBtn = document.getElementById("sofia-btn");
     const matijaBtn = document.getElementById("matija-btn");
     const backBtn = document.getElementById("back-btn");
-
-    // Dinamičke promenljive
+    
+    // Game state variables
     let currentRound = 0;
     let sofiaScore = 0;
     let matijaScore = 0;
     let validImages = [];
     let currentIndex = 0;
-
-    // Dugmad za izbor kategorije
+    
+    // Listen for category button clicks
     document.querySelectorAll(".category-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        const cat = btn.getAttribute("data-category");
-        startGame(cat);
+        const category = btn.getAttribute("data-category");
+        startGame(category);
       });
     });
-
-    // Dugme "Nazad"
+    
+    // Back button: return to category selection and reset game
     backBtn.addEventListener("click", () => {
       gameContainer.style.display = "none";
       categoryContainer.style.display = "block";
-      resetGameVariables();
+      resetGame();
     });
-
-    // Pokrećemo igru za izabranu kategoriju
+    
+    // Start the game by hiding the category selection, showing the game, and fetching images
     async function startGame(category) {
       categoryContainer.style.display = "none";
       gameContainer.style.display = "flex";
-
-      resetGameVariables();
-
-      // Pokušaj da skupiš "totalRounds" validnih slika
-      validImages = await fetchCategoryImages(category, totalRounds);
-
+      resetGame();
+      
+      // Fetch images from Unsplash API for the chosen category
+      validImages = await fetchUnsplashImages(category, totalRounds);
       if (validImages.length === 0) {
-        winnerEl.textContent = "Nema dovoljno validnih slika za kategoriju!";
+        winnerEl.textContent = "Not enough valid images for this category!";
         return;
       }
-
-      // Prikaži prvu sliku
       showNextImage();
     }
-
-    // Reset svih stanja
-    function resetGameVariables() {
+    
+    // Reset game state and UI elements
+    function resetGame() {
       currentRound = 0;
       sofiaScore = 0;
       matijaScore = 0;
@@ -234,58 +245,39 @@
       winnerEl.textContent = "";
       currentImageEl.src = "";
     }
-
-    // Dohvatamo slike sa LoremFlickr
-    async function fetchCategoryImages(category, count) {
-      const results = [];
-      let attempts = 0;
-      const maxAttempts = 50; // pokušaj do 50 puta
-
-      while (results.length < count && attempts < maxAttempts) {
-        attempts++;
-        const url = generateLoremFlickrUrl(category);
-        const isValid = await checkImage(url);
-        if (isValid) {
-          results.push(url);
+    
+    // Fetch random images from Unsplash API
+    async function fetchUnsplashImages(category, count) {
+      const accessKey = "1-SnSlQgPjJHmFfy1v5K3Xqm9cWXIk7xkGq5nILLFW0"; // Replace with your Unsplash API Access Key
+      const url = `https://api.unsplash.com/photos/random?query=${category}&count=${count}&client_id=${accessKey}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.error("Error fetching images:", response.statusText);
+          return [];
         }
+        const data = await response.json();
+        // Map the data to an array of image URLs (using the 'regular' size)
+        return data.map(photo => photo.urls.regular);
+      } catch (error) {
+        console.error("Fetch error:", error);
+        return [];
       }
-      return results;
     }
-
-    // Generišemo random link, npr. "https://loremflickr.com/800/600/animals?random=12345"
-    function generateLoremFlickrUrl(keyword) {
-      const randomParam = Math.floor(Math.random() * 100000);
-      // Više ključnih reči odvojeno zarezom, recimo:
-      // "animals", "transport", "objects"
-      // Ako želite sužavanje pretrage, možete probati: "objects,stuff" ili sl.
-      return `https://loremflickr.com/800/600/${keyword}?random=${randomParam}`;
-    }
-
-    // Proveravamo da li je slika validna
-    function checkImage(url) {
-      return new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
-        img.src = url;
-      });
-    }
-
-    // Prikaz sledeće slike
+    
+    // Display the next image
     function showNextImage() {
       currentRound++;
       roundNumberEl.textContent = currentRound;
-
       if (currentRound > totalRounds || currentIndex >= validImages.length) {
         declareWinner();
         return;
       }
-      const nextUrl = validImages[currentIndex];
+      currentImageEl.src = validImages[currentIndex];
       currentIndex++;
-      currentImageEl.src = nextUrl;
     }
-
-    // Klik na +1 Sofia => prelazak na sledeću sliku
+    
+    // Update score for Sofia and show next image
     sofiaBtn.addEventListener("click", () => {
       if (currentRound <= totalRounds) {
         sofiaScore++;
@@ -293,8 +285,8 @@
         showNextImage();
       }
     });
-
-    // Klik na +1 Matija => prelazak na sledeću sliku
+    
+    // Update score for Matija and show next image
     matijaBtn.addEventListener("click", () => {
       if (currentRound <= totalRounds) {
         matijaScore++;
@@ -302,19 +294,18 @@
         showNextImage();
       }
     });
-
-    // Deklarišemo pobednika
+    
+    // Declare the winner once the game is over
     function declareWinner() {
       currentImageEl.src = "";
       if (sofiaScore > matijaScore) {
-        winnerEl.textContent = "Pobednik je Sofia!";
+        winnerEl.textContent = "Sofia wins!";
       } else if (matijaScore > sofiaScore) {
-        winnerEl.textContent = "Pobednik je Matija!";
+        winnerEl.textContent = "Matija wins!";
       } else {
-        winnerEl.textContent = "Nerešeno!";
+        winnerEl.textContent = "It's a tie!";
       }
     }
   </script>
-
 </body>
 </html>
