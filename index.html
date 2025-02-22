@@ -2,22 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Guess The Image - React + Framer Motion</title>
+  <title>Guess The Image Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- React & ReactDOM (Production) -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Framer Motion -->
+
+  <!-- React, ReactDOM, Framer Motion, Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
+    /* Reset & Basic Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      margin: 0; 
-      padding: 0; 
       font-family: sans-serif;
       background: linear-gradient(135deg, #f6d365, #fda085);
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      color: #333;
     }
     #root {
       width: 100%;
@@ -31,7 +39,6 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       padding: 20px;
-      margin: 0 auto;
       width: 90%;
       max-width: 600px;
       display: flex;
@@ -60,10 +67,13 @@
       background: #7f8c8d;
       margin-left: 20px;
     }
+    hr {
+      width: 100%;
+    }
 
-    /* Game Screen Layout (landscape-like) */
+    /* Game Screen Layout (landscape) */
     .game-container {
-      display: none; /* We'll show it via React state */
+      display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: stretch;
@@ -75,9 +85,9 @@
       width: 90%;
       max-width: 1000px;
       margin: 0 auto;
-      position: relative; /* so we can place fullscreen button */
+      position: relative;
     }
-    /* Fullscreen button - top right corner */
+    /* Fullscreen button */
     .fullscreen-btn {
       position: absolute;
       top: 10px;
@@ -94,8 +104,7 @@
     .fullscreen-btn:hover {
       opacity: 0.8;
     }
-
-    /* Left side: image big */
+    /* Left Side: Image */
     .game-left {
       flex: 1;
       display: flex;
@@ -106,7 +115,7 @@
     .img-wrapper {
       width: 100%;
       max-width: 600px;
-      height: 80vh; /* occupy most of vertical space */
+      height: 80vh;
       background: #ccc;
       border-radius: 10px;
       overflow: hidden;
@@ -116,11 +125,10 @@
     }
     .img-wrapper img {
       object-fit: cover;
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
     }
-
-    /* Right side: scores and buttons */
+    /* Right Side: Controls */
     .game-right {
       flex: 1;
       display: flex;
@@ -172,21 +180,18 @@
     }
   </style>
 </head>
-
 <body>
   <div id="root"></div>
 
-  <script>
+  <!-- Our React code is transpiled by Babel -->
+  <script type="text/babel">
     const { useState, useEffect } = React;
     const { motion, AnimatePresence } = window["framer-motion"];
 
     const TOTAL_ROUNDS = 10;
-    // Replaced with your provided key:
     const UNSPLASH_ACCESS_KEY = "1-SnSlQgPjJHmFfy1v5K3Xqm9cWXIk7xkGq5nILLFW0";
 
-    /** 
-     * For toggling fullscreen 
-     */
+    // Toggle fullscreen mode
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen?.(); 
@@ -196,7 +201,7 @@
     }
 
     function App() {
-      // "screen" can be "category" or "game"
+      // screen: "category" or "game"
       const [screen, setScreen] = useState("category");
       const [selectedCategory, setSelectedCategory] = useState("");
 
@@ -217,86 +222,53 @@
                 exit={{ opacity: 0, y: -50 }}
                 transition={{ duration: 0.4 }}
               >
-                <h2>Odaberite Kategoriju (Choose Category)</h2>
+                <h2>Odaberite Kategoriju</h2>
 
-                {/* 1) Zivotinje (Animals) */}
-                <button 
-                  className="cat-button" 
-                  onClick={() => handleCategoryClick("animals")}
-                >
+                {/* 1. Životinje */}
+                <button className="cat-button" onClick={() => handleCategoryClick("animals")}>
                   Životinje (general)
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("domestic animals")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("domestic animals")}>
                   Životinje - Domaće
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("wild animals")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("wild animals")}>
                   Životinje - Divlje
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("farm animals")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("farm animals")}>
                   Životinje - Farma
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("sea life")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("sea life")}>
                   Životinje - Morske
                 </button>
 
-                <hr style={{ width: "100%" }} />
+                <hr />
 
-                {/* 2) Priroda (Nature) */}
-                <button 
-                  className="cat-button" 
-                  onClick={() => handleCategoryClick("nature")}
-                >
-                  Priroda (Nature)
+                {/* 2. Priroda */}
+                <button className="cat-button" onClick={() => handleCategoryClick("nature")}>
+                  Priroda
                 </button>
 
-                <hr style={{ width: "100%" }} />
+                <hr />
 
-                {/* 3) Zanimanja (Occupations) */}
-                <button 
-                  className="cat-button" 
-                  onClick={() => handleCategoryClick("occupations jobs")}
-                >
-                  Zanimanja (General)
+                {/* 3. Zanimanja */}
+                <button className="cat-button" onClick={() => handleCategoryClick("occupations jobs")}>
+                  Zanimanja (general)
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("pilot job")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("pilot job")}>
                   Zanimanja - Pilot
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("doctor job")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("doctor job")}>
                   Zanimanja - Doktor
                 </button>
-                <button 
-                  className="cat-button cat-sub" 
-                  onClick={() => handleCategoryClick("policeman police")}
-                >
+                <button className="cat-button cat-sub" onClick={() => handleCategoryClick("policeman police")}>
                   Zanimanja - Policajac
                 </button>
 
-                <hr style={{ width: "100%" }} />
+                <hr />
 
-                {/* 4) Ljudske Emocije (Faces) */}
-                <button 
-                  className="cat-button" 
-                  onClick={() => handleCategoryClick("people face expressions")}
-                >
-                  Ljudske Emocije (Faces)
+                {/* 4. Ljudske emocije */}
+                <button className="cat-button" onClick={() => handleCategoryClick("people face expressions")}>
+                  Ljudske emocije (Faces)
                 </button>
               </motion.div>
             )}
@@ -324,7 +296,7 @@
       const [currentIndex, setCurrentIndex] = useState(0);
       const [winner, setWinner] = useState("");
 
-      // Fetch images on mount
+      // Fetch images when category changes
       useEffect(() => {
         fetchImages(category, TOTAL_ROUNDS).then((urls) => {
           setImageUrls(urls || []);
@@ -334,7 +306,7 @@
         });
       }, [category]);
 
-      // Check if game is over
+      // End game if rounds exceeded
       useEffect(() => {
         if (round > TOTAL_ROUNDS || currentIndex >= imageUrls.length) {
           declareWinner();
@@ -358,15 +330,11 @@
       };
 
       const declareWinner = () => {
-        if (winner) return; // already declared
+        if (winner) return;
         let result = "";
-        if (sofiaScore > matijaScore) {
-          result = "Pobjednik je Sofia!";
-        } else if (matijaScore > sofiaScore) {
-          result = "Pobjednik je Matija!";
-        } else {
-          result = "Nerešeno!";
-        }
+        if (sofiaScore > matijaScore) result = "Pobjednik je Sofia!";
+        else if (matijaScore > sofiaScore) result = "Pobjednik je Matija!";
+        else result = "Nerešeno!";
         setWinner(result);
       };
 
@@ -384,7 +352,6 @@
             Fullscreen
           </button>
 
-          {/* Left: big image */}
           <div className="game-left">
             <div className="img-wrapper">
               {currentImage ? (
@@ -403,26 +370,19 @@
             </div>
           </div>
 
-          {/* Right: scores & buttons */}
           <div className="game-right">
             <div className="score-panel">
-              Runda: {round}/{TOTAL_ROUNDS} <br/>
+              Runda: {round}/{TOTAL_ROUNDS} <br />
               Sofia: {sofiaScore} | Matija: {matijaScore}
             </div>
 
             {!winner && (
               <>
                 <div className="score-buttons">
-                  <button 
-                    className="score-btn sofia-btn"
-                    onClick={() => handleNext("sofia")}
-                  >
+                  <button className="score-btn sofia-btn" onClick={() => handleNext("sofia")}>
                     +1 Sofia
                   </button>
-                  <button 
-                    className="score-btn matija-btn"
-                    onClick={() => handleNext("matija")}
-                  >
+                  <button className="score-btn matija-btn" onClick={() => handleNext("matija")}>
                     +1 Matija
                   </button>
                 </div>
@@ -450,7 +410,7 @@
       );
     }
 
-    // Fetch images from Unsplash API
+    // Fetch images using Unsplash API
     async function fetchImages(query, count) {
       const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&count=${count}&client_id=${UNSPLASH_ACCESS_KEY}`;
       try {
@@ -467,7 +427,7 @@
       }
     }
 
-    // Render the React App
+    // Render the App
     const rootEl = document.getElementById("root");
     ReactDOM.createRoot(rootEl).render(<App />);
   </script>
