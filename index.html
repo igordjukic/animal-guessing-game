@@ -1,311 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Guess the Image Game - Unsplash API</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Guess The Image - React + Framer Motion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- React & ReactDOM (Production) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Framer Motion -->
+  <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
   <style>
-    /* Reset & Basic Styling */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
     body {
-      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 0; 
+      font-family: sans-serif;
       background: linear-gradient(135deg, #f6d365, #fda085);
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      color: #333;
     }
-    h1 {
-      margin-top: 20px;
-      text-align: center;
+    #root {
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto;
     }
-    /* Category Selection Container */
-    #category-container {
+
+    /* Category Screen Styles */
+    .category-screen {
       background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      padding: 20px;
+      margin: 0 auto;
       width: 90%;
       max-width: 600px;
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .category-btn {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 15px;
-      font-size: 18px;
-      background-color: #3498db;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .category-btn:hover {
-      opacity: 0.85;
-    }
-    /* Game Container (Landscape Layout) */
-    #game-container {
-      display: none; /* Hidden until category is selected */
-      background: #fff;
-      width: 90%;
-      max-width: 1000px;
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .category-screen h2 {
+      margin-bottom: 10px;
+    }
+    .cat-button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+      background: #3498db;
+      transition: 0.3s;
+    }
+    .cat-button:hover {
+      opacity: 0.8;
+    }
+    .cat-sub {
+      background: #7f8c8d;
+      margin-left: 20px;
+    }
+
+    /* Game Screen Layout (landscape-like) */
+    .game-container {
+      display: none; /* We'll show it via React state */
       flex-direction: row;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: stretch;
       gap: 20px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative; /* so we can place fullscreen button */
     }
-    /* Left Side: Image Display */
-    #game-left {
+    /* Fullscreen button - top right corner */
+    .fullscreen-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #9b59b6;
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .fullscreen-btn:hover {
+      opacity: 0.8;
+    }
+
+    /* Left side: image big */
+    .game-left {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
-    #image-container {
+    .img-wrapper {
       width: 100%;
-      max-width: 450px;
-      height: 300px;
-      background: #f0f0f0;
+      max-width: 600px;
+      height: 80vh; /* occupy most of vertical space */
+      background: #ccc;
       border-radius: 10px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    #current-image {
+    .img-wrapper img {
+      object-fit: cover;
       max-width: 100%;
       max-height: 100%;
     }
-    /* Right Side: Game Info, Scores, and Buttons */
-    #game-right {
+
+    /* Right side: scores and buttons */
+    .game-right {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
+      gap: 20px;
     }
-    #game-info {
-      margin-bottom: 10px;
-      font-size: 18px;
+    .score-panel {
       text-align: center;
-    }
-    #scores {
-      margin-bottom: 20px;
       font-size: 18px;
-      text-align: center;
     }
-    .score-buttons, .back-button-container {
-      width: 100%;
+    .score-buttons,
+    .navigation-buttons {
       display: flex;
-      justify-content: space-around;
       gap: 10px;
-      margin-bottom: 20px;
     }
-    .score-btn {
-      flex: 1;
-      padding: 15px;
-      font-size: 16px;
+    .score-btn,
+    .nav-btn {
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
+      font-size: 16px;
+      padding: 12px;
       color: #fff;
       cursor: pointer;
       transition: 0.3s;
       text-align: center;
     }
-    .score-btn:hover {
-      opacity: 0.85;
+    .score-btn:hover,
+    .nav-btn:hover {
+      opacity: 0.8;
     }
-    .sofia {
+    .sofia-btn {
       background-color: #f39c12;
     }
-    .matija {
+    .matija-btn {
       background-color: #3498db;
+    }
+    .skip-btn {
+      background-color: #7f8c8d;
     }
     .back-btn {
       background-color: #e74c3c;
     }
-    #winner {
+    .winner {
       font-size: 20px;
-      text-align: center;
       font-weight: bold;
       color: #d35400;
-      margin-top: 10px;
     }
   </style>
 </head>
+
 <body>
-  <h1>Guess the Image Game</h1>
-  
-  <!-- Category Selection -->
-  <div id="category-container">
-    <p>Select a category:</p>
-    <button class="category-btn" data-category="animals">Animals</button>
-    <button class="category-btn" data-category="objects">Objects</button>
-    <button class="category-btn" data-category="transport">Transport</button>
-  </div>
-  
-  <!-- Game Container (Landscape Layout) -->
-  <div id="game-container">
-    <!-- Left Side: Image -->
-    <div id="game-left">
-      <div id="image-container">
-        <img id="current-image" src="" alt="Image">
-      </div>
-    </div>
-    <!-- Right Side: Game Info, Scores, & Buttons -->
-    <div id="game-right">
-      <div id="game-info">Round: <span id="round-number">0</span>/<span id="total-rounds">10</span></div>
-      <div id="scores">Sofia: <span id="sofia-score">0</span> | Matija: <span id="matija-score">0</span></div>
-      <div class="score-buttons">
-        <button class="score-btn sofia" id="sofia-btn">+1 Sofia</button>
-        <button class="score-btn matija" id="matija-btn">+1 Matija</button>
-      </div>
-      <div class="back-button-container">
-        <button class="score-btn back-btn" id="back-btn">Back</button>
-      </div>
-      <div id="winner"></div>
-    </div>
-  </div>
-  
+  <div id="root"></div>
+
   <script>
-    // Set total rounds for the game
-    const totalRounds = 10;
-    document.getElementById("total-rounds").textContent = totalRounds;
-    
-    // DOM element selectors
-    const categoryContainer = document.getElementById("category-container");
-    const gameContainer = document.getElementById("game-container");
-    const currentImageEl = document.getElementById("current-image");
-    const roundNumberEl = document.getElementById("round-number");
-    const sofiaScoreEl = document.getElementById("sofia-score");
-    const matijaScoreEl = document.getElementById("matija-score");
-    const winnerEl = document.getElementById("winner");
-    const sofiaBtn = document.getElementById("sofia-btn");
-    const matijaBtn = document.getElementById("matija-btn");
-    const backBtn = document.getElementById("back-btn");
-    
-    // Game state variables
-    let currentRound = 0;
-    let sofiaScore = 0;
-    let matijaScore = 0;
-    let validImages = [];
-    let currentIndex = 0;
-    
-    // Listen for category button clicks
-    document.querySelectorAll(".category-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const category = btn.getAttribute("data-category");
-        startGame(category);
-      });
-    });
-    
-    // Back button: return to category selection and reset game
-    backBtn.addEventListener("click", () => {
-      gameContainer.style.display = "none";
-      categoryContainer.style.display = "block";
-      resetGame();
-    });
-    
-    // Start the game by hiding the category selection, showing the game, and fetching images
-    async function startGame(category) {
-      categoryContainer.style.display = "none";
-      gameContainer.style.display = "flex";
-      resetGame();
-      
-      // Fetch images from Unsplash API for the chosen category
-      validImages = await fetchUnsplashImages(category, totalRounds);
-      if (validImages.length === 0) {
-        winnerEl.textContent = "Not enough valid images for this category!";
-        return;
+    const { useState, useEffect } = React;
+    const { motion, AnimatePresence } = window["framer-motion"];
+
+    const TOTAL_ROUNDS = 10;
+    // Replaced with your provided key:
+    const UNSPLASH_ACCESS_KEY = "1-SnSlQgPjJHmFfy1v5K3Xqm9cWXIk7xkGq5nILLFW0";
+
+    /** 
+     * For toggling fullscreen 
+     */
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.(); 
+      } else {
+        document.exitFullscreen?.();
       }
-      showNextImage();
     }
-    
-    // Reset game state and UI elements
-    function resetGame() {
-      currentRound = 0;
-      sofiaScore = 0;
-      matijaScore = 0;
-      currentIndex = 0;
-      validImages = [];
-      roundNumberEl.textContent = "0";
-      sofiaScoreEl.textContent = "0";
-      matijaScoreEl.textContent = "0";
-      winnerEl.textContent = "";
-      currentImageEl.src = "";
+
+    function App() {
+      // "screen" can be "category" or "game"
+      const [screen, setScreen] = useState("category");
+      const [selectedCategory, setSelectedCategory] = useState("");
+
+      const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+        setScreen("game");
+      };
+
+      return (
+        <div>
+          <AnimatePresence mode="wait">
+            {screen === "category" && (
+              <motion.div
+                key="categoryScreen"
+                className="category-screen"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                transition={{ duration: 0.4 }}
+              >
+                <h2>Odaberite Kategoriju (Choose Category)</h2>
+
+                {/* 1) Zivotinje (Animals) */}
+                <button 
+                  className="cat-button" 
+                  onClick={() => handleCategoryClick("animals")}
+                >
+                  Životinje (general)
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("domestic animals")}
+                >
+                  Životinje - Domaće
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("wild animals")}
+                >
+                  Životinje - Divlje
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("farm animals")}
+                >
+                  Životinje - Farma
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("sea life")}
+                >
+                  Životinje - Morske
+                </button>
+
+                <hr style={{ width: "100%" }} />
+
+                {/* 2) Priroda (Nature) */}
+                <button 
+                  className="cat-button" 
+                  onClick={() => handleCategoryClick("nature")}
+                >
+                  Priroda (Nature)
+                </button>
+
+                <hr style={{ width: "100%" }} />
+
+                {/* 3) Zanimanja (Occupations) */}
+                <button 
+                  className="cat-button" 
+                  onClick={() => handleCategoryClick("occupations jobs")}
+                >
+                  Zanimanja (General)
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("pilot job")}
+                >
+                  Zanimanja - Pilot
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("doctor job")}
+                >
+                  Zanimanja - Doktor
+                </button>
+                <button 
+                  className="cat-button cat-sub" 
+                  onClick={() => handleCategoryClick("policeman police")}
+                >
+                  Zanimanja - Policajac
+                </button>
+
+                <hr style={{ width: "100%" }} />
+
+                {/* 4) Ljudske Emocije (Faces) */}
+                <button 
+                  className="cat-button" 
+                  onClick={() => handleCategoryClick("people face expressions")}
+                >
+                  Ljudske Emocije (Faces)
+                </button>
+              </motion.div>
+            )}
+
+            {screen === "game" && (
+              <GameScreen
+                key="gameScreen"
+                category={selectedCategory}
+                onBack={() => {
+                  setScreen("category");
+                  setSelectedCategory("");
+                }}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+      );
     }
-    
-    // Fetch random images from Unsplash API
-    async function fetchUnsplashImages(category, count) {
-      const accessKey = "1-SnSlQgPjJHmFfy1v5K3Xqm9cWXIk7xkGq5nILLFW0"; // Replace with your Unsplash API Access Key
-      const url = `https://api.unsplash.com/photos/random?query=${category}&count=${count}&client_id=${accessKey}`;
+
+    function GameScreen({ category, onBack }) {
+      const [round, setRound] = useState(0);
+      const [sofiaScore, setSofiaScore] = useState(0);
+      const [matijaScore, setMatijaScore] = useState(0);
+      const [imageUrls, setImageUrls] = useState([]);
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [winner, setWinner] = useState("");
+
+      // Fetch images on mount
+      useEffect(() => {
+        fetchImages(category, TOTAL_ROUNDS).then((urls) => {
+          setImageUrls(urls || []);
+          setRound(0);
+          setCurrentIndex(0);
+          setWinner("");
+        });
+      }, [category]);
+
+      // Check if game is over
+      useEffect(() => {
+        if (round > TOTAL_ROUNDS || currentIndex >= imageUrls.length) {
+          declareWinner();
+        }
+      }, [round, currentIndex, imageUrls]);
+
+      const handleNext = (scoreFor) => {
+        if (!winner) {
+          setRound((r) => r + 1);
+          if (scoreFor === "sofia") setSofiaScore((s) => s + 1);
+          if (scoreFor === "matija") setMatijaScore((m) => m + 1);
+          setCurrentIndex((idx) => idx + 1);
+        }
+      };
+
+      const handleSkip = () => {
+        if (!winner) {
+          setRound((r) => r + 1);
+          setCurrentIndex((idx) => idx + 1);
+        }
+      };
+
+      const declareWinner = () => {
+        if (winner) return; // already declared
+        let result = "";
+        if (sofiaScore > matijaScore) {
+          result = "Pobjednik je Sofia!";
+        } else if (matijaScore > sofiaScore) {
+          result = "Pobjednik je Matija!";
+        } else {
+          result = "Nerešeno!";
+        }
+        setWinner(result);
+      };
+
+      const currentImage = imageUrls[currentIndex] || "";
+
+      return (
+        <motion.div
+          className="game-container"
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -100 }}
+          transition={{ duration: 0.5 }}
+        >
+          <button className="fullscreen-btn" onClick={toggleFullScreen}>
+            Fullscreen
+          </button>
+
+          {/* Left: big image */}
+          <div className="game-left">
+            <div className="img-wrapper">
+              {currentImage ? (
+                <motion.img
+                  key={currentImage}
+                  src={currentImage}
+                  alt="Current"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                />
+              ) : (
+                <p>Loading...</p>
+              )}
+            </div>
+          </div>
+
+          {/* Right: scores & buttons */}
+          <div className="game-right">
+            <div className="score-panel">
+              Runda: {round}/{TOTAL_ROUNDS} <br/>
+              Sofia: {sofiaScore} | Matija: {matijaScore}
+            </div>
+
+            {!winner && (
+              <>
+                <div className="score-buttons">
+                  <button 
+                    className="score-btn sofia-btn"
+                    onClick={() => handleNext("sofia")}
+                  >
+                    +1 Sofia
+                  </button>
+                  <button 
+                    className="score-btn matija-btn"
+                    onClick={() => handleNext("matija")}
+                  >
+                    +1 Matija
+                  </button>
+                </div>
+                <div className="navigation-buttons">
+                  <button className="nav-btn skip-btn" onClick={handleSkip}>
+                    Next (Skip)
+                  </button>
+                  <button className="nav-btn back-btn" onClick={onBack}>
+                    Back
+                  </button>
+                </div>
+              </>
+            )}
+
+            {winner && (
+              <div style={{ textAlign: "center" }}>
+                <p className="winner">{winner}</p>
+                <button className="nav-btn back-btn" onClick={onBack}>
+                  Nazad
+                </button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      );
+    }
+
+    // Fetch images from Unsplash API
+    async function fetchImages(query, count) {
+      const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&count=${count}&client_id=${UNSPLASH_ACCESS_KEY}`;
       try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          console.error("Error fetching images:", response.statusText);
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.error("Unsplash fetch error:", res.statusText);
           return [];
         }
-        const data = await response.json();
-        // Map the data to an array of image URLs (using the 'regular' size)
-        return data.map(photo => photo.urls.regular);
-      } catch (error) {
-        console.error("Fetch error:", error);
+        const data = await res.json();
+        return data.map((item) => item.urls.regular);
+      } catch (err) {
+        console.error("Fetch error:", err);
         return [];
       }
     }
-    
-    // Display the next image
-    function showNextImage() {
-      currentRound++;
-      roundNumberEl.textContent = currentRound;
-      if (currentRound > totalRounds || currentIndex >= validImages.length) {
-        declareWinner();
-        return;
-      }
-      currentImageEl.src = validImages[currentIndex];
-      currentIndex++;
-    }
-    
-    // Update score for Sofia and show next image
-    sofiaBtn.addEventListener("click", () => {
-      if (currentRound <= totalRounds) {
-        sofiaScore++;
-        sofiaScoreEl.textContent = sofiaScore;
-        showNextImage();
-      }
-    });
-    
-    // Update score for Matija and show next image
-    matijaBtn.addEventListener("click", () => {
-      if (currentRound <= totalRounds) {
-        matijaScore++;
-        matijaScoreEl.textContent = matijaScore;
-        showNextImage();
-      }
-    });
-    
-    // Declare the winner once the game is over
-    function declareWinner() {
-      currentImageEl.src = "";
-      if (sofiaScore > matijaScore) {
-        winnerEl.textContent = "Sofia wins!";
-      } else if (matijaScore > sofiaScore) {
-        winnerEl.textContent = "Matija wins!";
-      } else {
-        winnerEl.textContent = "It's a tie!";
-      }
-    }
+
+    // Render the React App
+    const rootEl = document.getElementById("root");
+    ReactDOM.createRoot(rootEl).render(<App />);
   </script>
 </body>
 </html>
