@@ -2,17 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Guess The Image Game (Debug Mode)</title>
+  <title>Guess The Image Game - Debug Mode</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- React, ReactDOM, Framer Motion, Babel -->
+  <!-- Load React, ReactDOM, Framer Motion, Babel -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
   <style>
-    /* Reset & Basic Styling */
+    /* Basic reset and styling */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -32,7 +30,20 @@
       max-width: 1200px;
       margin: 20px auto;
     }
-
+    /* Debug panel styles */
+    #debug-output {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      max-height: 150px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      font-size: 12px;
+      padding: 5px;
+      z-index: 1000;
+    }
     /* Category Screen Styles */
     .category-screen {
       background: #fff;
@@ -70,7 +81,6 @@
     hr {
       width: 100%;
     }
-
     /* Game Screen Layout (landscape) */
     .game-container {
       display: flex;
@@ -182,33 +192,53 @@
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- React code with Babel transpilation and added debug logging -->
+  <div id="debug-output"></div>
+  
   <script type="text/babel">
+    // Debug logger: logs to console and appends messages to the debug panel
+    function debugLog(message) {
+      console.log(message);
+      const debugOutput = document.getElementById("debug-output");
+      if (debugOutput) {
+        const p = document.createElement("p");
+        p.textContent = message;
+        debugOutput.appendChild(p);
+      }
+    }
+    
+    // Global error handlers
+    window.onerror = function(message, source, lineno, colno, error) {
+      debugLog(`Window Error: ${message} at ${source}:${lineno}:${colno}`);
+    };
+    window.onunhandledrejection = function(event) {
+      debugLog(`Unhandled promise rejection: ${event.reason}`);
+    };
+
     const { useState, useEffect } = React;
     const { motion, AnimatePresence } = window["framer-motion"];
 
+    debugLog("Starting App...");
+
     const TOTAL_ROUNDS = 10;
     const UNSPLASH_ACCESS_KEY = "1-SnSlQgPjJHmFfy1v5K3Xqm9cWXIk7xkGq5nILLFW0";
-
-    // Toggle fullscreen mode and log the event
+    
+    // Toggle fullscreen mode
     function toggleFullScreen() {
+      debugLog("Toggling Fullscreen...");
       if (!document.fullscreenElement) {
-        console.log("Requesting fullscreen...");
-        document.documentElement.requestFullscreen?.();
+        document.documentElement.requestFullscreen?.(); 
       } else {
-        console.log("Exiting fullscreen...");
         document.exitFullscreen?.();
       }
     }
 
     function App() {
-      // "screen" is either "category" or "game"
       const [screen, setScreen] = useState("category");
       const [selectedCategory, setSelectedCategory] = useState("");
+      debugLog("App rendered. Screen: " + screen);
 
       const handleCategoryClick = (category) => {
-        console.log("Category selected:", category);
+        debugLog("Category clicked: " + category);
         setSelectedCategory(category);
         setScreen("game");
       };
@@ -226,8 +256,6 @@
                 transition={{ duration: 0.4 }}
               >
                 <h2>Odaberite Kategoriju</h2>
-
-                {/* 1. Životinje */}
                 <button className="cat-button" onClick={() => handleCategoryClick("animals")}>
                   Životinje (general)
                 </button>
@@ -243,17 +271,11 @@
                 <button className="cat-button cat-sub" onClick={() => handleCategoryClick("sea life")}>
                   Životinje - Morske
                 </button>
-
                 <hr />
-
-                {/* 2. Priroda */}
                 <button className="cat-button" onClick={() => handleCategoryClick("nature")}>
                   Priroda
                 </button>
-
                 <hr />
-
-                {/* 3. Zanimanja */}
                 <button className="cat-button" onClick={() => handleCategoryClick("occupations jobs")}>
                   Zanimanja (general)
                 </button>
@@ -266,22 +288,18 @@
                 <button className="cat-button cat-sub" onClick={() => handleCategoryClick("policeman police")}>
                   Zanimanja - Policajac
                 </button>
-
                 <hr />
-
-                {/* 4. Ljudske emocije */}
                 <button className="cat-button" onClick={() => handleCategoryClick("people face expressions")}>
                   Ljudske emocije (Faces)
                 </button>
               </motion.div>
             )}
-
             {screen === "game" && (
               <GameScreen
                 key="gameScreen"
                 category={selectedCategory}
                 onBack={() => {
-                  console.log("Returning to category selection.");
+                  debugLog("Returning to category screen");
                   setScreen("category");
                   setSelectedCategory("");
                 }}
@@ -300,11 +318,12 @@
       const [currentIndex, setCurrentIndex] = useState(0);
       const [winner, setWinner] = useState("");
 
-      // Log when GameScreen mounts
+      debugLog("GameScreen mounted for category: " + category);
+
       useEffect(() => {
-        console.log("GameScreen mounted for category:", category);
+        debugLog("Fetching images for category: " + category);
         fetchImages(category, TOTAL_ROUNDS).then((urls) => {
-          console.log("Fetched images:", urls);
+          debugLog("Fetched " + (urls ? urls.length : 0) + " images");
           setImageUrls(urls || []);
           setRound(0);
           setCurrentIndex(0);
@@ -313,30 +332,25 @@
       }, [category]);
 
       useEffect(() => {
-        console.log("Round:", round, "CurrentIndex:", currentIndex, "Total images:", imageUrls.length);
+        debugLog("Round: " + round + ", CurrentIndex: " + currentIndex);
         if (round > TOTAL_ROUNDS || currentIndex >= imageUrls.length) {
+          debugLog("Game over condition met");
           declareWinner();
         }
       }, [round, currentIndex, imageUrls]);
 
       const handleNext = (scoreFor) => {
-        console.log("Button clicked for:", scoreFor);
+        debugLog("handleNext called; scoring for: " + scoreFor);
         if (!winner) {
           setRound((r) => r + 1);
-          if (scoreFor === "sofia") {
-            setSofiaScore((s) => s + 1);
-            console.log("Incremented Sofia's score");
-          }
-          if (scoreFor === "matija") {
-            setMatijaScore((m) => m + 1);
-            console.log("Incremented Matija's score");
-          }
+          if (scoreFor === "sofia") setSofiaScore((s) => s + 1);
+          if (scoreFor === "matija") setMatijaScore((m) => m + 1);
           setCurrentIndex((idx) => idx + 1);
         }
       };
 
       const handleSkip = () => {
-        console.log("Skip button pressed");
+        debugLog("handleSkip called");
         if (!winner) {
           setRound((r) => r + 1);
           setCurrentIndex((idx) => idx + 1);
@@ -349,11 +363,12 @@
         if (sofiaScore > matijaScore) result = "Pobjednik je Sofia!";
         else if (matijaScore > sofiaScore) result = "Pobjednik je Matija!";
         else result = "Nerešeno!";
+        debugLog("Winner declared: " + result);
         setWinner(result);
-        console.log("Winner declared:", result);
       };
 
       const currentImage = imageUrls[currentIndex] || "";
+      debugLog("Current image index: " + currentIndex);
 
       return (
         <motion.div
@@ -366,7 +381,6 @@
           <button className="fullscreen-btn" onClick={toggleFullScreen}>
             Fullscreen
           </button>
-
           <div className="game-left">
             <div className="img-wrapper">
               {currentImage ? (
@@ -378,19 +392,19 @@
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.9, opacity: 0 }}
                   transition={{ duration: 0.4 }}
+                  onError={(e) => debugLog("Image load error: " + e.target.src)}
+                  onLoad={(e) => debugLog("Image loaded: " + e.target.src)}
                 />
               ) : (
                 <p>Loading...</p>
               )}
             </div>
           </div>
-
           <div className="game-right">
             <div className="score-panel">
               Runda: {round}/{TOTAL_ROUNDS} <br />
               Sofia: {sofiaScore} | Matija: {matijaScore}
             </div>
-
             {!winner && (
               <>
                 <div className="score-buttons">
@@ -411,7 +425,6 @@
                 </div>
               </>
             )}
-
             {winner && (
               <div style={{ textAlign: "center" }}>
                 <p className="winner">{winner}</p>
@@ -425,26 +438,24 @@
       );
     }
 
-    // Fetch images from Unsplash API with debug logging
     async function fetchImages(query, count) {
       const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&count=${count}&client_id=${UNSPLASH_ACCESS_KEY}`;
-      console.log("Fetching images from URL:", url);
+      debugLog("Fetching images from Unsplash: " + url);
       try {
         const res = await fetch(url);
         if (!res.ok) {
-          console.error("Unsplash fetch error:", res.statusText);
+          debugLog("Unsplash fetch error: " + res.statusText);
           return [];
         }
         const data = await res.json();
-        console.log("Fetched data:", data);
+        debugLog("Received " + data.length + " images");
         return data.map((item) => item.urls.regular);
       } catch (err) {
-        console.error("Fetch error:", err);
+        debugLog("Fetch error: " + err);
         return [];
       }
     }
 
-    // Render the React App
     const rootEl = document.getElementById("root");
     ReactDOM.createRoot(rootEl).render(<App />);
   </script>
